@@ -1,22 +1,13 @@
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pandas as pd
 import Quandl as q #imports Quandl and assigns 'q' as its shortcut so we can just type q.get() etc
-import os
 from openpyxl import Workbook
 from openpyxl.styles import Style, PatternFill, Color, Border, Side, Alignment
 
 
 vix = q.get("YAHOO/INDEX_VIX")
-#vixmonthly = q.get("YAHOO/INDEX_VIX", collapse="monthly")
-#allhilows = vixdata.loc[:,['High', 'Low']]
 
-#path = os.path.expanduser('~/vix-analysis/monthly.xlsx')
-#vix2 = pd.read_excel('monthly.xlsx')
-
-
-#leap years: 1992, 1996, 2000, 2004, 2008, 2012
 
 monthlim = {1: 31 , 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
 xltomonth = {2: 'January',
@@ -74,86 +65,60 @@ def printextrema(startyear, endyear):
 	
 
 
-def printexcelsheet(startyear, endyear, sheetname):
+def printexcelsheet(startyear, endyear, sheetname, start, hold, buy, end):
 
-	curlow = np.nan
 	xlbook = Workbook()
 	xsheet = xlbook.active
 	xsheet.title = sheetname
 	
-	colors = ['47B247', #0-4 green, 5 yellow, 6-16 red
-			  '52CC52',
-			  '5CE65C',
-			  '75FF75',
-			  '85FF85',
-			  'E6E600',
-			  '990000',
-		  	  'CC0000',
-			  'B20000',
-		  	  'E60000',
-		  	  'FF0000',
-		  	  'FF1919',
-			  'FF3333',
-			  'FF4D4D',
-			  'FF6666',
-			  'FF8080',
-			  'FF9999']
+	# green 00FF00-70FF00 = 112 values/8 = 14 shades
+ 	# yellow DFFF00-FFDF00 = 64 values/8 = 8 shades
+	# red 	FF6000-FF0000 = 96 values/8 = 12 shades
+
+	colors = []
+
+	for i in range(0, 112, 8):
+		if i <= 8:
+			colors.append('0%XFF00' % i)
+		else:
+			colors.append('%XFF00' % i)
+
+	for j in range(223, 255, 8):
+		colors.append('%XFF00' % j)
+	for j in reversed(range(223, 255, 8)):
+		colors.append('FF%X00' % j)
+
+	for k in reversed(range(0, 96, 8)):
+		if k <= 8:
+			colors.append('FF0%X00' % k)
+		else:
+			colors.append('FF%X00' % k)
+
+	greenlist = np.linspace(start, hold, 14) # numpy linear space
+	yellowlist = np.linspace(hold, buy, 8)	 # linspace(a,b,c) returns c evenly distributed values
+	redlist = np.linspace(buy, end, 12)		 # from a to b, including endpoints a and b
+
+	# concatenate the three lists and call unique() to get rid of duplicates
+	comparisonlist = np.unique(np.concatenate((greenlist, yellowlist, redlist))) #size = 34
+	length = len(comparisonlist)
 
 	side = Side(border_style = 'medium', color = 'FF000000')
 	xalignment = Alignment(horizontal = 'center')
 	xborder = Border(left = side, right = side, top = side, bottom = side)
-	styles = [Style(fill = PatternFill(fill_type = 'solid', start_color = colors[0], end_color = colors[0]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[1], end_color = colors[1]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[2], end_color = colors[2]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[3], end_color = colors[3]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[4], end_color = colors[4]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[5], end_color = colors[5]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[6], end_color = colors[6]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[7], end_color = colors[7]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[8], end_color = colors[8]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[9], end_color = colors[9]),
-																  border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[10], end_color = colors[10]),
-																	border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[11], end_color = colors[11]),
-																	border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[12], end_color = colors[12]),
-																	border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[13], end_color = colors[13]),
-																	border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[14], end_color = colors[14]),
-																	border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[15], end_color = colors[15]),
-																	border = xborder, alignment = xalignment),
-			  Style(fill = PatternFill(fill_type = 'solid', start_color = colors[16], end_color = colors[16]),
-																	border = xborder, alignment = xalignment)]
-	
 
+	#function to create a style from the passed cell color hex
+	def coloredcell(color): 
+		return Style(fill = PatternFill(fill_type = 'solid', start_color = color, end_color = color), border = xborder, alignment = xalignment)
 
-	# compare = {'High': }
-
-	# def high(val):
-	# 	if val > curx:
-	# 		xdate = curdate
-	# 		curx =
-
-
+	# make a style for every element of colors using coloredcell
+	styles = [coloredcell(color) for color in colors] 
 
 	# create the cells for January-December
 	for i in range(2, 14):
 		xsheet.cell(row = 1, column = i).value = xltomonth[i]
 
-	for year in range(startyear, endyear):
 
+	for year in range(startyear, endyear):
 		xlrow = year - startyear + 2
 		xsheet.cell(row = xlrow, column = 1).value = year
 		for month in range(12):
@@ -172,51 +137,21 @@ def printexcelsheet(startyear, endyear, sheetname):
 					curx = nextx
 				if curdate.is_month_end: #we know we found the lowest now, so break
 					break
+		
+			xsheet.cell(row = xlrow, column = month+2).value = curx #add value to cell
 
-			#47B247 9 - 10
-			#52CC52 between 11-10
-			#5CE65C between 12-13
-			#75FF75 between 13-14
-			#85FF85 between 14-15
-			#E6E600 between 15-18		
-			xsheet.cell(row = xlrow, column = month+2).value = curx #add value to excel cell
-			if curx <= 10:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[0]
-			elif 10 < curx <= 11:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[1]
-			elif 11 < curx <= 12:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[2]
-			elif 12 < curx <= 13:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[3]
-			elif 13 < curx <= 14:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[4]
-			elif 14 < curx <= 15:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[4]
-			elif 15 < curx <= 18:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[5]
-			elif 18 < curx <= 19:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[6]
-			elif 19 < curx <= 20:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[7]
-			elif 20 < curx <= 21:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[8]
-			elif 21 < curx <= 22:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[9]
-			elif 22 < curx <= 23:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[10]
-			elif 23 < curx <= 24:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[11]
-			elif 24 < curx <= 25:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[12]
-			elif 25 < curx <= 26:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[13]
-			elif 26 < curx <= 27:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[14]
-			elif 27 < curx <= 28:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[15]
-			elif curx > 28:
-				xsheet.cell(row = xlrow, column = month+2).style = styles[16]
+			#now color
+			# find the index 'z' of the first value 'ceiling' of comparisonlist that is greater than curx
+			# set cell style to corresponding colored cell style from styles
+			for ceiling in comparisonlist:
+				if curx < ceiling: 
+					z = np.where(comparisonlist==ceiling)
+					xsheet.cell(row = xlrow, column = month+2).style = styles[z[0]]
+					break
+				elif curx > comparisonlist[length - 1]: # we need to check if curx is greater than upper bound too
+					xsheet.cell(row = xlrow, column = month+2).style = styles[length - 1]
+					break
 
 	xlbook.save('%s.xlsx' % sheetname)
 
-printexcelsheet(1990, 2015, 'All_Lows')
+printexcelsheet(1990, 2015, 'All_Lows', 10, 15, 18, 28)
