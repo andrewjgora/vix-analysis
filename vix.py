@@ -71,13 +71,10 @@ def printexcelsheet(startyear, endyear, sheetname, start, hold, buy, end):
 	xsheet = xlbook.active
 	xsheet.title = sheetname
 	
-	# green 00FF00-70FF00 = 112 values/8 = 14 shades
- 	# yellow DFFF00-FFDF00 = 64 values/8 = 8 shades
-	# red 	FF6000-FF0000 = 96 values/8 = 12 shades
-
 	colors = []
 
-	for i in range(0, 112, 8):
+	#fill colors with hex for spectrum from green to red
+	for i in range(0, 104, 8):
 		if i <= 8:
 			colors.append('0%XFF00' % i)
 		else:
@@ -88,11 +85,11 @@ def printexcelsheet(startyear, endyear, sheetname, start, hold, buy, end):
 	for j in reversed(range(223, 255, 8)):
 		colors.append('FF%X00' % j)
 
-	for k in reversed(range(0, 96, 8)):
-		if k <= 8:
-			colors.append('FF0%X00' % k)
-		else:
+	for k in reversed(range(0, 88, 8)):
+		if k > 8:
 			colors.append('FF%X00' % k)
+		else:
+			colors.append('FF0%X00' % k)
 
 	greenlist = np.linspace(start, hold, 14) # numpy linear space
 	yellowlist = np.linspace(hold, buy, 8)	 # linspace(a,b,c) returns c evenly distributed values
@@ -101,7 +98,6 @@ def printexcelsheet(startyear, endyear, sheetname, start, hold, buy, end):
 	# concatenate the three lists and call unique() to get rid of duplicates
 	comparisonlist = np.unique(np.concatenate((greenlist, yellowlist, redlist))) #size = 34
 	length = len(comparisonlist)
-
 	side = Side(border_style = 'medium', color = 'FF000000')
 	xalignment = Alignment(horizontal = 'center')
 	xborder = Border(left = side, right = side, top = side, bottom = side)
@@ -116,7 +112,6 @@ def printexcelsheet(startyear, endyear, sheetname, start, hold, buy, end):
 	# create the cells for January-December
 	for i in range(2, 14):
 		xsheet.cell(row = 1, column = i).value = xltomonth[i]
-
 
 	for year in range(startyear, endyear):
 		xlrow = year - startyear + 2
